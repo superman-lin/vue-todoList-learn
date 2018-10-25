@@ -37,7 +37,13 @@ if(isDev) {
           test: /\.styl$/,
           use: [
             'vue-style-loader',  //使用css的热更新时要使用vue-style-loader
-            'css-loader',
+            {
+              loader: 'css-loader',
+              options: {
+                module: true,  //开启css-module模式
+                localIdentName: isDev ? '[path]-[name]-[hash:base64:5]' : '[hash:base64:5]',  //自定义类名
+              }
+            },
             {
               loader: 'postcss-loader',
               options: {
