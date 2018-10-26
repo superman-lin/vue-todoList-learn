@@ -3,6 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const webpack = require('webpack')
 const merge = require('webpack-merge') // 此工具用来很好的合理的合并webpack配置
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
+
 const baseConfig = require('./webpack.config.base.js')
 
 const isDev = process.env.NODE_ENV === 'development'
@@ -24,6 +25,7 @@ const defaultPlugins = [
     }
   }),
   new HtmlWebpackPlugin()
+
 ]
 
 let config
@@ -45,21 +47,22 @@ if (isDev) {
               }
             },
             'stylus-loader'
-          ]
+          ],
+          'exclude': /node_modules/
         }
       ]
     },
     devServer,
     plugins: defaultPlugins.concat([
-      new webpack.HotModuleReplacementPlugin(), // 热加载
-      new webpack.NoEmitOnErrorsPlugin()
+      new webpack.HotModuleReplacementPlugin() // 热加载
+      // new webpack.NoEmitOnErrorsPlugin()
     ])
   })
 } else {
   config = merge(baseConfig, {
     entry: {
-      app: path.join(__dirname, '../client/index.js'), // app.js存放业务代码，版本更新迭代，经常变动
-      vendor: ['vue'] // vendor.js存放类库代码，稳定性较高，不容易变动
+      app: path.join(__dirname, '../client/index.js') // app.js存放业务代码，版本更新迭代，经常变动
+      // vendor: ['vue'] // vendor.js存放类库代码，稳定性较高，不容易变动
     },
     output: {
       filename: '[name].[chunkhash:8].js'
@@ -84,14 +87,20 @@ if (isDev) {
         }
       ]
     },
+    optimization: {
+      splitChunks: {
+        chunks: 'all'
+      },
+      runtimeChunk: true
+    },
     plugins: defaultPlugins.concat([
-      new ExtractTextPlugin('styles.[contentHash:8].css'),
-      new webpack.optimize.CommonsChunkPlugin({
-        name: 'vendor' // name属性值要和入口文件entry的vendor相同
-      }),
-      new webpack.optimize.CommonsChunkPlugin({
-        name: 'runtime' // vendor一定要放在runtime的前面，否则会失去作用
-      })
+      new ExtractTextPlugin('styles.[contentHash:8].css')
+      // new webpack.optimize.CommonsChunkPlugin({
+      //   name: 'vendor' // name属性值要和入口文件entry的vendor相同
+      // }),
+      // new webpack.optimize.CommonsChunkPlugin({
+      //   name: 'runtime' // vendor一定要放在runtime的前面，否则会失去作用
+      // })
     ])
   })
 }
