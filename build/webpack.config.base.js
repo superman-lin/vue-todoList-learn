@@ -38,11 +38,10 @@ const config = {
       {
         test: /\.css$/,
         use: [
-          // 'style-loader', // 把css写进html中
+          'style-loader', // 把css写进html中
           'css-loader' // 从css文件中把内容读取出来
         ]
       },
-
       {
         test: /\.(gif|jpg|jpeg|png|svg)$/,
         use: [

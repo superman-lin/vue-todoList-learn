@@ -36,19 +36,44 @@ if (isDev) {
     module: {
       rules: [
         {
-          test: /\.styl$/,
-          use: [
-            'vue-style-loader', // 使用css的热更新时要使用vue-style-loader
-            'css-loader',
+          test: /\.styl(us)?$/,
+          oneOf: [
             {
-              loader: 'postcss-loader',
-              options: {
-                sourceMap: true
-              }
+              resourceQuery: /module/,
+              use: [
+                'vue-style-loader', // 使用css的热更新时要使用vue-style-loader
+                {
+                  loader: 'css-loader',
+                  options: {
+                    module: true, // 开启css Modules
+                    localIdentName: '[path]-[name]-[hash:base64:5]', // 自定义类名
+                    camelCase: true // 把用-命名的类名转换成驼峰命名
+                  }
+                },
+                {
+                  loader: 'postcss-loader',
+                  options: {
+                    sourceMap: true
+                  }
+                },
+                'stylus-loader'
+              ]
             },
-            'stylus-loader'
-          ],
-          'exclude': /node_modules/
+            {
+              use: [
+                'vue-style-loader', // 使用css的热更新时要使用vue-style-loader
+                'css-loader',
+                {
+                  loader: 'postcss-loader',
+                  options: {
+                    sourceMap: true
+                  }
+                },
+                'stylus-loader'
+              ]
+            }
+          ]
+          // exclude: /node_modules/
         }
       ]
     },
@@ -70,20 +95,47 @@ if (isDev) {
     module: {
       rules: [
         {
-          test: /\.styl$/,
-          use: ExtractTextPlugin.extract({
-            fallback: 'vue-style-loader',
-            use: [
-              'css-loader',
-              {
-                loader: 'postcss-loader',
-                options: {
-                  sourceMap: true
-                }
-              },
-              'stylus-loader'
-            ]
-          })
+          test: /\.styl(us)?$/,
+          oneOf: [
+            {
+              resourceQuery: /module/,
+              use: ExtractTextPlugin.extract({
+                fallback: 'vue-style-loader',
+                use: [
+                  {
+                    loader: 'css-loader',
+                    options: {
+                      module: true, // 开启css Modules
+                      localIdentName: '[hash:base64:5]', // 自定义类名
+                      camelCase: true // 把用-命名的类名转换成驼峰命名
+                    }
+                  },
+                  {
+                    loader: 'postcss-loader',
+                    options: {
+                      sourceMap: true
+                    }
+                  },
+                  'stylus-loader'
+                ]
+              })
+            },
+            {
+              use: ExtractTextPlugin.extract({
+                fallback: 'vue-style-loader',
+                use: [
+                  'css-loader',
+                  {
+                    loader: 'postcss-loader',
+                    options: {
+                      sourceMap: true
+                    }
+                  },
+                  'stylus-loader'
+                ]
+              })
+            }
+          ]
         }
       ]
     },
@@ -94,7 +146,10 @@ if (isDev) {
       runtimeChunk: true
     },
     plugins: defaultPlugins.concat([
-      new ExtractTextPlugin('styles.[contentHash:8].css')
+      // 如果`npm run build`时报错(webpack: 4.23.1会报错，webpack4.0.0使用contenthash不会报错)
+      // `Error: Path variable [contenthash] not implemented in this context: styles.[contentHash].css `
+      // 将`contenthash`换成`hash`，也可删除不用hash值`[name].css`
+      new ExtractTextPlugin('styles.[hash:8].css')
       // new webpack.optimize.CommonsChunkPlugin({
       //   name: 'vendor' // name属性值要和入口文件entry的vendor相同
       // }),
